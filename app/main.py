@@ -12,10 +12,10 @@ from app.db.session import engine
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     # Все нужные модели должны быть импортированы перед запуском
-    from app.models import TaskORM
-    from app.models import CategoryORM
+    from app.models.task import TaskORM
+    from app.models.category import CategoryORM
     Base.metadata.create_all(bind=engine)
-    Base.metadata.create_all(bind=engine)
+    
     yield
 
 
