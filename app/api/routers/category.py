@@ -1,41 +1,51 @@
-from operator import ge
+from fastapi import APIRouter, Depends, HTTPException, status
 
-from fastapi import APIRouter, Depends, HTTPException
-from fastapi import status
+from app.api.dependencies import get_category_service
+from app.schemas.category import CategoryCreate, CategoryRead, CategoryUpdate
+from app.services.category import CategoryNotFoundError, CategoryService
 
-from app.db.session import get_db
-from app.schemas.category import Category, CategoryCreate, CategoryUpdate
-from app.api import get_category_service
-from app.services.category import TaskNotFound
 
-router = APIRouter(prefix='/categories')
 
-@router.get('', response_model=list[Category])
-def get_category()  -> list[Category]:
-    '''Получить список категорий'''
-    category_service = get_category_service()
-    return category_service.list_categories()
+router = APIRouter(prefix="/categories", tags=["categories"])
 
-@router.post('', response_model=Category, status_code=status.HTTP_201_CREATED)
-def post_category(new_category: CategoryCreate):
-    """Создать категорию"""
-    category_service = get_category_service()
-    return category_service.create_category(new_category)
-    
-@router.patch("/{category_id}", response_model=Category, status_code=status.HTTP_200_OK)
-def patch_category(category_id: str, new_name: CategoryUpdate) -> Category:
-    '''Изменить категорию'''
-    category_service = get_category_service()
+
+@router.get("", response_model=list[CategoryRead])
+def get_categories(service: CategoryService = Depends(get_category_service)) -> list[CategoryRead]:
+    return service.list_categories()
+
+
+@router.post("", response_model=CategoryRead, status_code=status.HTTP_201_CREATED)
+def create_category(
+    payload: CategoryCreate,
+    service: CategoryService = Depends(get_category_service),
+) -> CategoryRead:
+    return service.create_category(payload)
+
+
+@router.patch("/{category_id}", response_model=CategoryRead)
+def update_category(
+    category_id: str,
+    payload: CategoryUpdate,
+    service: CategoryService = Depends(get_category_service),
+) -> CategoryRead:
     try:
-        return category_service.update_category(category_id, new_name)
-    except TaskNotFound as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+        return service.update_category(category_id, payload)
+    except CategoryNotFoundError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Категория не найдена",
+        )
 
-@router.delete('/{category_id}', status_code=status.HTTP_204_NO_CONTENT)
-def delete_category(category_id: str) -> None:
-    '''Удаление категории'''
-    category_service = get_category_service()
+
+@router.delete("/{category_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_category(
+    category_id: str,
+    service: CategoryService = Depends(get_category_service),
+) -> None:
     try:
-        return category_service.delete_category(category_id)
-    except TaskNotFound as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+        service.delete_category(category_id)
+    except CategoryNotFoundError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Категория не найдена",
+        )
