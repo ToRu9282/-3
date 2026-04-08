@@ -1,5 +1,6 @@
 from contextlib import asynccontextmanager
 
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -11,6 +12,7 @@ from app.db.session import engine
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
+    load_dotenv()
     # Все нужные модели должны быть импортированы перед запуском
     from app.models.task import TaskORM
     from app.models.category import CategoryORM
