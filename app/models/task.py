@@ -1,11 +1,13 @@
-
-
+from sqlalchemy import Boolean, String
 from sqlalchemy.orm import Mapped, mapped_column
 
+from app.db.base import Base
+
+
 class TaskORM(Base):
-```
-    """Модель для таблицы задач в Базе Данных"""
-    __tablename__ = "tasks"
+    """Модель задачи в БД"""
     
-    title: Mapped[str]
-    completed: Mapped[bool] = mapped_column(default=False)
+    __tablename__ = "tasks"
+
+    title: Mapped[str] = mapped_column(String(255), nullable=False)
+    completed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
