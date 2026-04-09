@@ -2,7 +2,6 @@ from dataclasses import dataclass
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
 
 @dataclass(frozen=True)
 class Settings:
@@ -11,6 +10,7 @@ class Settings:
 
 
 def get_settings() -> Settings:
+    load_dotenv()
     return Settings(
         database_url=os.getenv("DATABASE_URL"),
         cors_origins=[os.getenv("CORS_ORIGINS")]
