@@ -1,6 +1,6 @@
 import logging
-from time import perf_counter
 import threading
+from time import perf_counter
 
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
@@ -25,13 +25,17 @@ app.add_middleware(
     allow_headers=["*"],
     allow_credentials=True,
 )
-@app.middleware("http")  # log_requests выполнится до и после обработки каждого HTTP-запроса
+
+
+@app.middleware(
+    "http"
+)  # log_requests выполнится до и после обработки каждого HTTP-запроса
 async def log_requests(request: Request, call_next) -> Response:
     global request_counter
     with request_counter_lock:
-        request_counter +=1
-        c=request_counter
-    
+        request_counter += 1
+        c = request_counter
+
     started_at = perf_counter()
     try:
         response: Response = await call_next(request)  # Работа самого эндпоинта
@@ -53,7 +57,8 @@ async def log_requests(request: Request, call_next) -> Response:
         response.status_code,
         duration_ms,
     )
-    response.headers['X-Request-Number']=str(c)
+    response.headers["X-Request-Number"] = str(c)
     return response
+
 
 app.include_router(api_router)

@@ -6,7 +6,7 @@ from app.db.base import Base
 
 class TaskORM(Base):
     """Модель задачи в БД"""
-    
+
     __tablename__ = "tasks"
 
     title: Mapped[str] = mapped_column(String(255), nullable=False)
